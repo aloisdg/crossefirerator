@@ -1,0 +1,606 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crossfirerator</title>
+    <style>
+      body {
+        max-width: 600px;
+        margin: 0 auto;
+        margin-top: 100px;
+      }
+
+      .face {
+        background: crimson;
+        padding: 2px 5px;
+        border-radius: 5px;
+        color: white;
+      }
+
+      .decker {
+        background: forestgreen;
+        padding: 2px 5px;
+        border-radius: 5px;
+        color: white;
+      }
+
+      .mage {
+        background: royalblue;
+        padding: 2px 5px;
+        border-radius: 5px;
+        color: white;
+      }
+
+      .samurai {
+        background: black;
+        padding: 2px 5px;
+        border-radius: 5px;
+        color: white;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css"
+    />
+    <style>
+      details p {
+        line-height: 200%;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Crossfirerator</h1>
+      <div style="display: flex">
+        <button id="new">new</button>
+        <select id="difficulty">
+          <option value="20">easy</option>
+          <option value="24">base</option>
+          <option value="32">hard</option>
+          <option value="44">hell</option>
+        </select>
+      </div>
+    </header>
+    <hr />
+    <h2 id="story-title"></h2>
+    <div id="story-acts"></div>
+
+    <script>
+      const _obstacles = [
+        { name: "Homme de main du yak", class: "samurai", nuyens: 5 },
+        { name: "Decker Pucé", class: "decker", nuyens: 5 },
+        // { name: "Rayons Détecteur", class: "decker", nuyens: 5, event: true },
+        { name: "Mage corpo", class: "mage", nuyens: 5 },
+        { name: "Officier des Douanes", class: "face", nuyens: 5 },
+        { name: "Tête à Deck", class: "samurai", nuyens: 4 },
+        // {
+        //   name: "À court de Munitions",
+        //   class: "samurai",
+        //   nuyens: 4,
+        //   event: true,
+        // },
+        // { name: "Alarme Visuelle", class: "face", nuyens: 4, event: true },
+        { name: "Adepte Corporatiste", class: "mage", nuyens: 4 },
+        // { name: "Frisson Astral", class: "mage", nuyens: 4, event: true },
+        { name: "Mauvaise passe", class: "decker", nuyens: 4 },
+        { name: "Intermédiaire Ork", class: "face", nuyens: 4 },
+        { name: "Punks des Rues", class: "samurai", nuyens: 5 },
+        { name: "Lanceur de Sort de précision", class: "mage", nuyens: 5 },
+        { name: "Technodrain Soudain", class: "decker", nuyens: 4 },
+        {
+          name: "Spécialistes en Opérations Clandestines",
+          class: "face",
+          nuyens: 6,
+        },
+        { name: "Adepte à ossature renforcée", class: "samurai", nuyens: 6 },
+        { name: "Fantassin Lone Star", class: "samurai", nuyens: 6 },
+        { name: "Esprit de l'Air", class: "mage", nuyens: 6 },
+        { name: "Sentinelles des Ancients", class: "face", nuyens: 5 },
+        { name: "Decker de combat", class: "decker", nuyens: 5 },
+        { name: "Adepte du Feu", class: "mage", nuyens: 5 },
+        { name: "Métamorphe Jaguar", class: "face", nuyens: 6 },
+        { name: "Drone de Combat Léger", class: "decker", nuyens: 6 },
+        { name: "Porte-flingue Troll", class: "samurai", nuyens: 6 },
+        { name: "Assassin Freelance", class: "samurai", nuyens: 6 },
+        { name: "Chaman Elfe", class: "mage", nuyens: 6 },
+        { name: "Decker Aztlan", class: "decker", nuyens: 6 },
+        { name: "Ganger des Anciens", class: "samurai", nuyens: 5 },
+        {
+          name: "Chef de Gang",
+          class: "face",
+          nuyens: 5,
+        },
+        {
+          name: "Coursier",
+          class: "face",
+          nuyens: 8,
+        },
+        {
+          name: "Merco Câblé",
+          class: "decker",
+          nuyens: 11,
+        },
+        {
+          name: "Mage Troll",
+          class: "mage",
+          nuyens: 11,
+        },
+        {
+          name: "Traqueur Scrybot",
+          class: "face",
+          nuyens: 11,
+        },
+        {
+          name: "Expert en Démolition",
+          class: "face",
+          nuyens: 8,
+        },
+        {
+          name: "Éclaireur Astral",
+          class: "mage",
+          nuyens: 8,
+        },
+
+        {
+          name: "Drone de Combat Aérien",
+          class: "decker",
+          nuyens: 8,
+        },
+      ];
+
+      const stories = [
+        {
+          title: "Riffi chez les voyous",
+          acts: [
+            {
+              title: `OBJECTIF DE MISSION`,
+              content: `Un groupe de voyous c'est réunis et prépare un sale coup. <br />
+      Allez sur place et cramer tout.`,
+            },
+            {
+              title: "Scène 1",
+              content: `<i>*Vous vous rendez sur place.*</i><br />
+        <i>*À peine arrivée, les gardes vous repèrent.*</i><br />
+        Les gardes %minions vous tirent dessus.`,
+              minions: 4,
+            },
+            {
+              title: "Scène 2",
+              content: `Maintenant que les gardes sont ko. Vous pouvez entrer dans le batiment.
+        <br />
+        Le QG est assez grand. Il y a du monde forcément...<br />Partout vous
+        entendez des cris, des hurlements. Ils arrivent...<br />
+        Garde %minions entrent en jeux.`,
+              minions: 4,
+            },
+            {
+              title: "Scène 3",
+              content: `Vous gravissez les marches quatres à quatres. <br />
+        Vous passez un couloir, puis un sas. <br />
+        Vous êtes à présent dans un bureau. <br />
+        Une bûche est dans l'âtre. <br />
+        La chaise se retourne et le boss
+        %boss est là avec ses %minionsCount gardes du
+        corps %minions. <br />
+        Vous êtes venu pour ça. Finissons-en. <br />`,
+              minions: 4,
+            },
+            {
+              title: "FIN DE SCÈNE",
+              content: `Une mission parfaitement executée. Vous gagnez %karma Karma.`,
+            },
+          ],
+        },
+        {
+          title: "Embuscade à %location",
+          acts: [
+            {
+              title: "OBJECTIF DE MISSION",
+              content: `Notre client souhaite que son convoi arrive à new Tokyo sans la moindre égratinure.<br />
+          Nous avons intercepter une communication chiffrée nous révélant que les Red Claws prévoient une attaque.<br />
+          %location possède trois plateaux offrant l'endroit parfait pour une embuscade. Si notre mission avait été d'intercepter le convoi, nous nous serions placé là.<br />
+          Rendez-vous à chacun de ces trois points et nettoyer toutes les saloperies s'y cachant.`,
+            },
+            {
+              title: "Premier Point",
+              content: `<i>Vous vous rendez sur place.</i><br />
+              Des traces de pas ? Il y a bien de la saloperie ici !<br />
+              <i>Les bandits sont bien là. Révélez %minions.</i>`,
+              minions: [
+                { name: "Punks des Rues", class: "samurai" },
+                { name: "Lanceur de Sort de précision", class: "mage" },
+                { name: "Technodrain Soudain", class: "decker" },
+                {
+                  name: "Spécialistes en Opérations Clandestines",
+                  class: "face",
+                },
+              ],
+            },
+            {
+              title: "Second Point",
+              content: `<i>Vous grimpez le second point. Vous êtes attentifs. Les sens aiguisés.</i><br />
+              "Ça sent le graillon!" clame une voie. "Il y a de la piétaille en bas!"<br />
+              <i>Vous êtes repérés ! Placez vous et sortez votre armement voici %minions !</i>`,
+              minions: [
+                { name: "Adepte à ossature renforcée", class: "samurai" },
+                { name: "Intermédiaire Ork", class: "face" },
+                { name: "Decker de combat", class: "decker" },
+                { name: "Adepte du Feu", class: "mage" },
+                { name: "Métamorphe Jaguar", class: "face" },
+              ],
+            },
+            {
+              title: "Dernier Point",
+              content: `Deux points de %location nettoyés. Le boss des Red Claws est toujours absent. Est-ce un pleutre ?<br />
+        Vous avancez doucement, faisant attention à chaque détails. Au loin, vous voyez le convoi qui approche.<br />
+        Tant pis il va falloir faire du bruit et provoquer les cafards planqués ici.<br />
+        Au moindre fracas, ce sont des balles qui vous répondent. Le boss et ses sbires sont là !<br />
+        <i>Effectivement, voici %boss accompagné de %minions !</i>`,
+              minions: [
+                { name: "Drone de Combat Léger", class: "decker" },
+                { name: "Porte-flingue Troll", class: "samurai" },
+                { name: "Mage Corpo", class: "mage" },
+                { name: "Decker Pucé", class: "decker" },
+                { name: "Ganger des Anciens", class: "samurai" },
+              ],
+              boss: {
+                name: "Chef de Gang",
+                class: "face",
+                nuyens: 0,
+              },
+            },
+            {
+              title: "FIN DE SCÈNE",
+              content: `Une mission parfaitement executée. Vous gagnez %karma Karma.`,
+            },
+          ],
+        },
+        {
+          title: "La vengeance est un plat qui se mange à 3 !",
+          acts: [
+            {
+              title: `OBJECTIF DE MISSION`,
+              content: `Est-ce que vous vous rappelez la fois où vous avez assassiné le Boss du clan Yatori Star ?<br />
+              Sachez que ses trois enfants n'ont pas oublié et on fait serment d'honorer leur père et de vange le clan.<br />
+              Ils ont décidé que celui qui aurait votre peau prendrait la tête du clan.<br />
+              Nous sommes chanceux de leur bếtise. Vous n'auriez pas été en état de leur faire face si ils avaient été unis.<br />
+              Autant en finir rapidement. Nous avons laissez entendre que vous seriez toute la soirée au %bar.<br />
+              Allez-y et préparez-vous à la soirée de votre vie.`,
+            },
+            {
+              title: "1er Enfant",
+              content: `Une fois sur place, le temps est long. Rien à faire vous vous faites chier.<br />
+              Mais qu'est-ce qu'ils foutent ces dératés ! Ces cons sont en retard à leur propre vengance.<br />
+              Bordel. On va attendre au %bar sans se prendre un verre.<br />
+              Vous avez à peine le temps de passer commande, qu'un tonnerre de klaxons se fait entendre. Les abrutis sont là.<br />
+              Vous sortez du bar pour faire face à un %boss et %minionsCount sbires (%minions).`,
+              minions: 4,
+            },
+            {
+              title: "2e Enfant",
+              content: `Ok un héritier de ko. A tous les coups, le suivant va prendre son temps. Rentrons recharger nos armes et nos gosiers.<br />
+              Android ! Un petit bleu ! "Je vous fais ça !" vous réponds une voie numérique.<br />
+              Vous ressortez du %bar avant que les manants pillent ce qui restent des corps.<br />
+              Mais une fois dehors c'est une silhouette qui vous fait face. Elle vous dit "Vous avez tué mon père ! Vous avez tué mon ainé ! Préparez vous à mourr-". Bam !! Un bon coup sec ! Vous l'interrompez. Votre verre vous attends.<br />
+              La silhouette est un %boss et est accompagnée de %minions.`,
+              minions: 4,
+            },
+            {
+              title: "3e Enfant",
+              content: `Juste à temps ! Voilà le serveur avec nos verres. Allons nous asseoire et laissons les corps à la rue.<br />
+              Santé ! Plus qu'un héritier à cramer ! Pan ! Mon verre ! L'enfant de chien ! Il a bousillé mon godet !<br />
+              Famille de merde ! Vous allez morfler...<br />
+              De l'autre côté du tripot, %boss, suivi de %minions vous tiennent en joue.
+              `,
+              minions: 4,
+            },
+            {
+              title: "FIN DE SCÈNE",
+              content: `Une vengeance parfaitement avortée. Vous gagnez %karma Karma et vous claquer tout vos nuyens. C'est votre tournée au %bar !`,
+            },
+          ],
+        },
+        {
+          title: "Le train sifflera 3 fois !",
+          acts: [
+            {
+              title: `OBJECTIF DE MISSION`,
+              content: `Notre client à poster par erreur un colis et souhaite le récuperer.<br />
+              D'après nos calculs, il est actuellement dans le train en direction de Seattle.<br />
+              Les passagers sont à l'avant du train et le colis sera avec les colis à l'arrière.<br/>
+              Remontez un par un les wagons jusqu'à le trouver. Vous ne pourrez pas passer à côté.<br />
+              C'est un colis blindé émettant une lueur verte portant le sigle d'EVO Corporation.<br />
+              Partez sur le champs et revenez avec !`,
+            },
+            {
+              title: "1er Wagon",
+              content: `Approche ! Approche ! Ok c'est bon. Nous voici sur le train. Decker, hacke ce verrou.<br />
+              Pan ! Oui tirez dessus ça marche aussi...<br />
+              Tenons nous prêt, car eux ils le sont.<br />
+              <i>Placez %minions sur la table de jeu.</i>`,
+              minions: 4,
+            },
+            {
+              title: "2e Wagon",
+              content: `Forcément ce n'est pas le premier. Cela aurait été trop facile.<br />
+              Decker, ouvre la prochaine porte. Pan ! Oui c'est vrai avec le boucan du premier wagon et leur talkie ils sont dejà au courant.
+              Voyons qui se cache ici.<br />Tiens, tiens, %minions.`,
+              minions: 4,
+            },
+            {
+              title: "3e Wagon",
+              content: `Pan ! Oui je m'en occupe direct. C'est plus simple. Pan ! Pan ! Pan ! Et allez un de moins.<br />
+              Là bas le colis ! Lueur ? Phare oui ! Qu'est-ce que c'est que ce truc ?<br/>
+              A couvert ! Il y a encore %minions.<br />`,
+              minions: 4,
+            },
+            {
+              title: "FIN DE SCÈNE",
+              content: `Un braquage parfaitement mené. Vous gagnez %karma Karma.`,
+            },
+          ],
+        },
+      ];
+
+      // https://shadowrun.fandom.com/wiki/Lists_of_bars_and_nightclubs_in_Seattle
+      // https://rpgenerator.net/shadowrunbars-restaurants
+      const _bars = [
+        "Psychadelic Pirate",
+        "Club Penumbra",
+        "Underworld 93",
+        "Banshee",
+        "Blue SINners",
+        "Mad Cats",
+      ];
+
+      // https://rpgenerator.net/cyberpunk/places
+      const _locations = [
+        "Tucson Creek",
+        "2nd Yokogawa Overpass",
+        "Astoria West",
+        "New Evo Trail",
+        "Lower Costa Mesa Road",
+        "Everett Factories",
+        "Central Pampa Passage",
+        "East Towson Alley",
+      ];
+    </script>
+    <script>
+      const getRandomItem = (items) =>
+        items[Math.floor(Math.random() * items.length)];
+
+      // https://stackoverflow.com/questions/6274339/how-can-i-shuffle-an-array
+      /**
+       * Shuffles array in place. ES6 version
+       * @param {Array} a items An array containing the items.
+       */
+      function shuffle(source) {
+        const a = source.slice();
+        for (let i = a.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+      }
+
+      const orderBy = (items, property) => {
+        const result = items.slice();
+        result.sort(
+          (a, b) => parseFloat(a[property]) - parseFloat(b[property])
+        );
+        return result;
+      };
+
+      const groupBy = (xs, key) => {
+        return xs.reduce(function (rv, x) {
+          (rv[x[key]] = rv[x[key]] || []).push(x);
+          return rv;
+        }, {});
+      };
+
+      // https://stackoverflow.com/questions/25888963/min-by-max-by-equivalent-functions-in-javascript
+      // the only difference between minBy and maxBy is the ordering
+      // function, so abstract that out
+      Array.prototype.minBy = function (fn) {
+        return this.extremumBy(fn, Math.min);
+      };
+
+      Array.prototype.maxBy = function (fn) {
+        return this.extremumBy(fn, Math.max);
+      };
+
+      Array.prototype.extremumBy = function (pluck, extremum) {
+        return this.reduce(function (best, next) {
+          var pair = [pluck(next), next];
+          if (!best) {
+            return pair;
+          } else if (extremum.apply(null, [best[0], pair[0]]) == best[0]) {
+            return best;
+          } else {
+            return pair;
+          }
+        }, null)[1];
+      };
+
+      const range = (n) => Array.from(Array(n).keys());
+
+      const generateCrew = (obstacles, difficulty) => {
+        const groups = shuffle(Object.values(groupBy(obstacles, "class")));
+        const variance = Math.floor(difficulty / 4);
+        const crew = groups
+          .slice(1)
+          .map((g) => getRandomItem(g.filter((x) => x.nuyens <= variance)));
+        const sumCrew = crew.reduce((a, b) => a + b.nuyens, 0);
+        const maxSlot = difficulty - sumCrew;
+        const lastGroup = groups.slice(0, 1);
+        const candidates = lastGroup.filter((x) => x.nuyens < maxSlot);
+        if (candidates.length > 0) {
+          return crew.concat([getRandomItem(candidates)]);
+        }
+        const minCandidates = Object.entries(groupBy(lastGroup[0], "nuyens"))
+          .map(([key, value]) => ({ key: key, value: value }))
+          .minBy((x) => x.key).value;
+        return crew.concat([getRandomItem(minCandidates)]);
+      };
+
+      const frenchJoin = (list) =>
+        `${list.slice(0, -1).join(", ")} et ${list.slice(-1)}`;
+
+      const getBoss = (team) => {
+        const boss = team.maxBy((x) => x.nuyens);
+        const crew = team.filter((x) => x.name !== boss.name);
+        return [boss, crew];
+      };
+
+      // todo: dont do that in a rec fn...
+      // instead take n random
+      const generateCrewMember = (crews, variance) => {
+        const obstacles = _obstacles.filter(
+          (x) => !crews.some((y) => x.name === y.name)
+        );
+        const candidates = obstacles.filter((x) => x.nuyens <= variance);
+
+        if (candidates.length > 0) {
+          return getRandomItem(candidates);
+        }
+        const minCandidates = Object.entries(groupBy(obstacles, "nuyens"))
+          .map(([key, value]) => ({ key: key, value: value }))
+          .minBy((x) => x.key).value;
+        return getRandomItem(minCandidates);
+      };
+
+      const addMembers = (crew, recruitsCount, variance) => {
+        if (recruitsCount <= 0) {
+          console.log(
+            "complete crew level",
+            crew.reduce((a, b) => a + b.nuyens, 0)
+          );
+          return crew;
+        }
+        return addMembers(
+          crew.concat([generateCrewMember(crew, variance)]),
+          recruitsCount - 1
+        );
+      };
+
+      const buildAct = (act, index, difficulty, storyOnly) => {
+        const details = document.createElement("details");
+        const summary = document.createElement("summary");
+        const p = document.createElement("p");
+        summary.textContent = act.title;
+        if (storyOnly) {
+          p.innerHTML = act.content
+            .replaceAll("%karma", difficulty === 44 ? "4" : "3")
+            .replaceAll("%bar", act.bar)
+            .replaceAll("%location", act.location);
+          details.appendChild(summary);
+          details.appendChild(p);
+          return details;
+        }
+
+        const crew = generateBossAndCrew(act, index - 1, difficulty);
+
+        p.innerHTML = act.content
+          .replaceAll(
+            "%boss",
+            (crew.boss ?? false) &&
+              `<span class="${crew.boss.class}">${crew.boss.name}</span>`
+          )
+          .replaceAll("%bar", act.bar)
+          .replaceAll("%location", act.location)
+          .replaceAll("%minionsCount", crew.team.length)
+          .replaceAll(
+            "%minions",
+            act.minions &&
+              frenchJoin(
+                crew.team.map(
+                  (x) =>
+                    `<span class="${x.class}">${x.name.replaceAll(
+                      " ",
+                      "&nbsp;"
+                    )}</span>`
+                )
+              )
+          );
+        details.appendChild(summary);
+        details.appendChild(p);
+        return details;
+      };
+
+      const generateBossAndCrew = (act, index, difficulty) => {
+        const core = Array.isArray(act.minions)
+          ? act.minions
+          : generateCrew(_obstacles, difficulty);
+        const hasBoss = act.boss !== undefined;
+        const missingCount =
+          4 +
+          index -
+          core.length +
+          (hasBoss ? -1 : 0) +
+          (difficulty === 44 ? 1 : 0);
+        const members = addMembers(
+          core,
+          missingCount,
+          Math.ceil(difficulty / 4)
+        );
+
+        const [boss, team] = act.content.includes("%boss")
+          ? hasBoss
+            ? [act.boss, members]
+            : getBoss(members)
+          : [undefined, members];
+        return { boss: boss, team: team };
+      };
+
+      const next = (current) => (current + 1) % stories.length;
+
+      const updateActs = (story, bar, location, difficulty) => {
+        document.querySelector("#story-acts").innerHTML = "";
+        story.acts.forEach((act, index) => {
+          const isStoryOnly = index === 0 || index === story.acts.length - 1;
+          act.bar = bar;
+          act.location = location;
+          const node = buildAct(act, index, difficulty, isStoryOnly);
+          const div = document.createElement("div");
+          div.appendChild(node);
+          document.querySelector("#story-acts").appendChild(div);
+        });
+
+      }
+
+      const update = () => {
+        // const index = next(
+        //   parseInt(
+        //     document.querySelector("#story-title").getAttribute("data-index") ??
+        //       "-1"
+        //   )
+        // );
+        
+        // document
+        //   .querySelector("#story-title")
+        //   .setAttribute("data-index", index);
+
+        const difficulty = parseInt(
+          document.querySelector("#difficulty").value
+        );
+        _bar = getRandomItem(_bars);
+        _location = getRandomItem(_bars);
+        _story = getRandomItem(stories);
+        document.querySelector("#story-title").textContent = _story.title
+          .replaceAll("%bar", _bar)
+          .replaceAll("%location", _location);
+          updateActs(_story, _bar, _location, difficulty);
+      };
+
+      let _bar;
+      let _location;
+      let _story;
+
+      document.querySelector("#new").onclick = update;
+      document.querySelector("#difficulty").onchange = (e) => { updateActs(_story, _bar, _location, parseInt(e.target.value)) };
+
+      update();
+    </script>
+  </body>
+</html>
